@@ -27,7 +27,7 @@ function App() {
     setResult(null);
 
     try {
-      const res = await fetch("http://localhost:8000/api/birth-chart", {
+      const res = await fetch("astroai-production-d20e.up.railway.app", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
