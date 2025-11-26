@@ -7,9 +7,9 @@ function App() {
     date: "",
     time: "",
     place: "",
-    latitude: "8.0883",    // default Kanyakumari
+    latitude: "8.0883",      // default Kanyakumari
     longitude: "77.5385",
-    timezone_offset: "5.5", // IST
+    timezone_offset: "5.5",  // IST
   });
 
   const [loading, setLoading] = useState(false);
@@ -20,6 +20,9 @@ function App() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
+  // ---------------------------
+  // FIXED BACKEND CALL
+  // ---------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -27,19 +30,24 @@ function App() {
     setResult(null);
 
     try {
-      const res = await fetch("astroai-production-d20e.up.railway.app", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          latitude: parseFloat(form.latitude),
-          longitude: parseFloat(form.longitude),
-          timezone_offset: parseFloat(form.timezone_offset),
-        }),
-      });
+      const res = await fetch(
+        "https://astroai-production-d20e.up.railway.app/api/birth-chart",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...form,
+            latitude: parseFloat(form.latitude),
+            longitude: parseFloat(form.longitude),
+            timezone_offset: parseFloat(form.timezone_offset),
+          }),
+        }
+      );
 
       if (!res.ok) {
-        throw new Error("Server error. Check backend console.");
+        const errTxt = await res.text();
+        console.log("Backend Error:", errTxt);
+        throw new Error("Server error — check backend logs");
       }
 
       const data = await res.json();
@@ -93,12 +101,12 @@ function App() {
             Astrology AI – Professional Birth Chart
           </h1>
           <p style={{ color: "#cbd5f5", fontSize: "14px" }}>
-            Enter birth details to generate an accurate Vedic chart, personality
-            analysis, and a shareable chart image.
+            Enter your birth details to generate Vedic chart + personality +
+            career + relationship + health report.
           </p>
         </header>
 
-        {/* Form + Chart section */}
+        {/* Form + Chart */}
         <div
           style={{
             display: "grid",
@@ -106,7 +114,7 @@ function App() {
             gap: "20px",
           }}
         >
-          {/* Form */}
+          {/* FORM */}
           <section
             style={{
               background: "rgba(15,23,42,0.9)",
@@ -124,102 +132,101 @@ function App() {
             >
               Birth Details
             </h2>
-            <p style={{ fontSize: "12px", color: "#9ca3af", marginBottom: 12 }}>
-              Time should be as accurate as possible for correct Lagna & houses.
-            </p>
 
             <form onSubmit={handleSubmit} style={{ display: "grid", gap: "10px" }}>
-              <div style={{ display: "grid", gap: "8px" }}>
+              <label style={{ fontSize: "13px" }}>
+                Name
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Your name"
+                  required
+                  style={inputStyle}
+                />
+              </label>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "8px",
+                }}
+              >
                 <label style={{ fontSize: "13px" }}>
-                  Name
+                  Date of Birth
                   <input
-                    name="name"
-                    value={form.name}
+                    type="date"
+                    name="date"
+                    value={form.date}
                     onChange={handleChange}
-                    placeholder="Your name"
                     required
                     style={inputStyle}
                   />
                 </label>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "8px",
-                  }}
-                >
-                  <label style={{ fontSize: "13px" }}>
-                    Date of Birth
-                    <input
-                      type="date"
-                      name="date"
-                      value={form.date}
-                      onChange={handleChange}
-                      required
-                      style={inputStyle}
-                    />
-                  </label>
-                  <label style={{ fontSize: "13px" }}>
-                    Time of Birth
-                    <input
-                      type="time"
-                      name="time"
-                      value={form.time}
-                      onChange={handleChange}
-                      required
-                      style={inputStyle}
-                    />
-                  </label>
-                </div>
-
                 <label style={{ fontSize: "13px" }}>
-                  Place of Birth
+                  Time of Birth
                   <input
-                    name="place"
-                    value={form.place}
+                    type="time"
+                    name="time"
+                    value={form.time}
                     onChange={handleChange}
-                    placeholder="Kanyakumari, Tamil Nadu"
                     required
                     style={inputStyle}
                   />
                 </label>
+              </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                    gap: "8px",
-                  }}
-                >
-                  <label style={{ fontSize: "12px" }}>
-                    Latitude
-                    <input
-                      name="latitude"
-                      value={form.latitude}
-                      onChange={handleChange}
-                      style={inputStyleSmall}
-                    />
-                  </label>
-                  <label style={{ fontSize: "12px" }}>
-                    Longitude
-                    <input
-                      name="longitude"
-                      value={form.longitude}
-                      onChange={handleChange}
-                      style={inputStyleSmall}
-                    />
-                  </label>
-                  <label style={{ fontSize: "12px" }}>
-                    Timezone (hrs)
-                    <input
-                      name="timezone_offset"
-                      value={form.timezone_offset}
-                      onChange={handleChange}
-                      style={inputStyleSmall}
-                    />
-                  </label>
-                </div>
+              <label style={{ fontSize: "13px" }}>
+                Place of Birth
+                <input
+                  name="place"
+                  value={form.place}
+                  onChange={handleChange}
+                  placeholder="City, Country"
+                  required
+                  style={inputStyle}
+                />
+              </label>
+
+              {/* LAT / LONG / TIMEZONE */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gap: "8px",
+                }}
+              >
+                <label style={{ fontSize: "12px" }}>
+                  Latitude
+                  <input
+                    name="latitude"
+                    value={form.latitude}
+                    onChange={handleChange}
+                    style={inputStyleSmall}
+                  />
+                </label>
+
+                <label style={{ fontSize: "12px" }}>
+                  Longitude
+                  <input
+                    name="longitude"
+                    value={form.longitude}
+                    onChange={handleChange}
+                    style={inputStyleSmall}
+                  />
+                </label>
+
+                <label style={{ fontSize: "12px" }}>
+                  Timezone
+                  <input
+                    name="timezone_offset"
+                    value={form.timezone_offset}
+                    onChange={handleChange}
+                    style={inputStyleSmall}
+                  />
+                </label>
               </div>
 
               {error && (
@@ -254,7 +261,6 @@ function App() {
                   color: "white",
                   boxShadow: "0 10px 25px rgba(59,130,246,0.3)",
                   opacity: loading ? 0.6 : 1,
-                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
                 }}
               >
                 {loading ? "Calculating chart..." : "Generate Reading"}
@@ -262,7 +268,7 @@ function App() {
             </form>
           </section>
 
-          {/* Chart */}
+          {/* CHART */}
           <section
             style={{
               background: "rgba(15,23,42,0.9)",
@@ -294,8 +300,7 @@ function App() {
                   textAlign: "center",
                 }}
               >
-                Your generated South-Indian style chart image will appear here
-                after you submit your birth details.
+                Your generated chart will appear here after you submit.
               </p>
             )}
 
@@ -326,27 +331,24 @@ function App() {
                   ⬇ Download Chart PNG
                 </button>
 
-                {result.chart && (
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: "#9ca3af",
-                      marginTop: "10px",
-                      textAlign: "left",
-                      width: "100%",
-                    }}
-                  >
-                    <strong>Lagna:</strong> {result.chart.lagna_sign}{" "}
-                    &nbsp;•&nbsp; <strong>Moon:</strong>{" "}
-                    {result.chart.moon_sign}
-                  </p>
-                )}
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#9ca3af",
+                    marginTop: "10px",
+                    textAlign: "left",
+                    width: "100%",
+                  }}
+                >
+                  <strong>Lagna:</strong> {result.chart.lagna_sign} •{" "}
+                  <strong>Moon:</strong> {result.chart.moon_sign}
+                </p>
               </>
             )}
           </section>
         </div>
 
-        {/* Report section */}
+        {/* --- REPORT CARDS --- */}
         {result && (
           <section
             style={{
@@ -383,6 +385,10 @@ function App() {
   );
 }
 
+/* ----------------------------------- */
+/* INPUT STYLES                        */
+/* ----------------------------------- */
+
 const inputStyle = {
   width: "100%",
   marginTop: "4px",
@@ -400,6 +406,9 @@ const inputStyleSmall = {
   padding: "6px 8px",
 };
 
+/* ----------------------------------- */
+/* REPORT CARD                         */
+/* ----------------------------------- */
 function ReportCard({ title, text }) {
   return (
     <div
@@ -428,4 +437,3 @@ function ReportCard({ title, text }) {
 }
 
 export default App;
-
